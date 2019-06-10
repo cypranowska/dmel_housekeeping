@@ -47,10 +47,10 @@ This repository contains the entire computational pipeline for this project from
 Command-line tools and their versions used for this project are:
 
 * SRA Toolkit ver 2.9.4 (CentOS Linux 64-bit distro)
-* FastQC
+* FastQC ver 0.11.7
 * Trimmomatic ver 0.38
-* Bowtie2 
-* Samtools
+* Bowtie2 ver 2.3.4
+* Samtools ver 1.8
 * Tophat ver 2.1.1
 * Cufflinks ver 2.2.1
 
