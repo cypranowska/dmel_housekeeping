@@ -17,3 +17,6 @@ tab.use <- tab[use,]
 
 ## do a log10(FPKM+1) transformation of the data
 tab.use[,-1] <- log10(tab.use[,-1]+1)
+
+## join the fpkm and attr tables
+fpkm_attr <- merge(x = tab.use, y = gene.tab, by = "tracking_id", all.x = TRUE)
