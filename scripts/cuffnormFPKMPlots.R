@@ -26,7 +26,8 @@ tab.use <- tab[use,]
 tab.use[,-1] <- log10(tab.use[,-1]+1)
 
 ## join the fpkm and attr tables
-fpkm_attr <- merge(x = tab.use, y = gene.tab, by = "tracking_id", all.x = TRUE)
+# commenting out because we don't actually use this
+# fpkm_attr <- merge(x = tab.use, y = gene.tab, by = "tracking_id", all.x = TRUE)
 
 ## plot the sample fpkms against each other(scatterplot)
 # commenting out the line below because we don't need to create a second object to make the combos
@@ -43,25 +44,27 @@ for (r in 2:nrow(combos)){
   # package below, as an idea
 }
 
-# Caroline's solution
+# # Caroline's solution
 # # convert to long format
 # tab.use <- melt(tab.use)
 # 
 # ## generate a 'dictionary' of pairwise sample combos
-# combos <- combinations(16,2,sample.key$sample_name)
-# 
+# combos <- as.data.frame(combinations(16,2,sample.key$sample_name))
+# # fix the levels for each column
+# combos$V1 <- factor(combos$V1, levels=union(levels(combos$V1), levels(combos$V2)))
+# combos$V2 <- factor(combos$V2, levels=union(levels(combos$V1), levels(combos$V2)))
 # ## declare a function that makes the log10 FPKM plots
 # # args: key - dataframe with pairwise sample combinations, data.use - a dataframe of log10 FPKM values for each sample in long format
 # # output: .pdf file for each scatter plot
 # 
 # plotFPKMCombos <- function(key, data.use) {
 #   for (i in 1:nrow(key)) {
-#     data.use %>% filter(variable == key$Var1[i] | variable == key$Var2[i]) %>% dcast(tracking_id ~ variable) -> tmp
+#     data.use %>% filter(variable == key$V1[i] | variable == key$V2[i]) %>% dcast(tracking_id ~ variable) -> tmp
 #     # remove the tracking_id column
 #     tmp <- tmp[,-c(1)]
 #     ggplot(tmp, aes(x = tmp[,1], y = tmp[,2])) + geom_point() + labs(x = paste("log10(FPKM+1)", colnames(tmp)[1]), y = paste("log10(FPKM+1)", colnames(tmp)[2]))
-#     ggsave(filename = paste0("log10FPKM_",colnames(tmp)[1],"_",colnames(tmp)[2],".pdf"))
+#     #ggsave(filename = paste0("log10FPKM_",colnames(tmp)[1],"_",colnames(tmp)[2],".pdf"))
 #   }
 # }
-
+# 
 # plotFPKMCombos(combos, tab.use)
