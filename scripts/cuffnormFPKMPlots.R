@@ -21,15 +21,9 @@ tab.use[,-1] <- log10(tab.use[,-1]+1)
 ## join the fpkm and attr tables
 fpkm_attr <- merge(x = tab.use, y = gene.tab, by = "tracking_id", all.x = TRUE)
 
-## create a histogram for fpkm data
+##plot the sample fpkms against each other(scatterplot)
 library(dplyr)
 sample_list <- sample.key %>% pull(sample_name)
-for (sample in sample_list){
-  sample_data <- tab.use[,c("tracking_id",sample)]
-  plot(sample_data)}
-
-##histogram for count?
-library(ggplot2)
-for (sample in sample_list){
-  sample_data <- tab.use[,c("tracking_id",sample)]
-  ggplot(sample_data)}
+combos <- combinations(16,2,sample_list)
+for (r in 1:nrow(combos)){
+  plot(tab.use$r[1], tab.use$r[2])}
