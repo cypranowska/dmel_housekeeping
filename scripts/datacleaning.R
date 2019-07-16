@@ -36,6 +36,6 @@ head(tab.sorted, n=100)
 ## plot the sample fpkms against each other(scatterplot)
 combos <- combinations(16,2,sample.key$sample_name)
 for (r in 2:nrow(combos)){
-  plot(tab.use[,combos[r,1]], tab.use[,combos[r,2]], main=cat(sprintf("%s vs %s", combos[r,1], combos[r,2])), xlab=cat(sprintf("%s", combos[r,1])),ylab=cat(sprintf("%s", combos[r,2])))
+  plot(tab.use[,combos[r,1]], tab.use[,combos[r,2]], main=cat(sprintf("%s vs %s", combos[r,1], combos[r,2])), xlab=combos[r,1],ylab=combos[r,2])
 }
 
