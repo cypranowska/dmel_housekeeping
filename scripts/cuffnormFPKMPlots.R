@@ -38,7 +38,7 @@ for (r in 2:nrow(combos)){
   # we want to plot the columns specified in combos, so we select all rows in tab.use by 
   # putting the comma first in square brackets and then choosing the column with combos[r,1] or 
   # combos[r,2]
-  plot(tab.use[,combos[r,1]], tab.use[,combos[r,2]])
+  plot(tab.use[,combos[r,1]], tab.use[,combos[r,2]], xlab=combos[r,1], ylab=combos[r,2])
   # this will work to generate the plots but it's tricky to tell which samples are being compared in each plot
   # you can add some lines to change the labels of the x and y axis to make this more clear. I used the ggplot
   # package below, as an idea
