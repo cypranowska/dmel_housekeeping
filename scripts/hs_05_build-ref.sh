@@ -1,15 +1,28 @@
 #!/bin/bash
-# this script is for building and indexing the Dmel 6 reference genome prior to mapping reads
+# Job name:
+#SBATCH --job-name=build_ref
+#
+# Account:
+#SBATCH --account=fc_nmjreg
+#
+# Partition:
+#SBATCH --partition=savio
+#
+# Quality:
+#
+#SBATCH --qos=savio_normal
+#
+# Wall clock limit:
+#SBATCH --time=03:00:00
+#
+## Command(s) to run:
 
-log_file="$(date "+%m%d%Y-%H%M%S").log"
+echo "Loading hisat2"
 
-echo "Loading bowtie2"
-module load bowtie2 samtools
+module load hisat2
 
 cd ../ref
 
-echo "Building bowtie2 reference genome"
-bowtie2-build Drosophila_melanogaster.BDGP6.dna.toplevel.fa dm6 > $log_file
+echo "Building hisat2 reference genome"
 
-echo "Indexing reference fasta file"
-samtools faidx Drosophila_melanogaster.BDGP6.dna.toplevel.fa >> $log_file
+hisat2-build Drosophila_melanogaster.BDGP6.dna.toplevel.fa dm6
