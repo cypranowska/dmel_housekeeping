@@ -7,6 +7,7 @@ library(dplyr)
 library(tibble)
 library(ggplot2)
 library(SummarizedExperiment)
+library(DESeq2)
 
 option_list <- list(
   make_option("--project", default = "", type = "character", help = "name for project, e.g. bulk_rnai"),
@@ -81,8 +82,20 @@ cpm <- function(dat) {
 # remove genes expressed at < 1 in fewer than 10 cells
 keep <- rowSums(cpm(assay(se)) >= 5) > 10
 se <- se[keep,]
-assays(se)$normcounts <- cpm(assay(se))
-assays(se)$logcounts <- log2(cpm(assay(se)+1))
+
+tissue <- c("im_disc", "im_disc", "fat_body", "fat_body", "saliv", "dig", "cns", "cns", "saliv", "carcass", 
+            "dig", "carcass", "im_disc", "im_disc", "im_disc", "im_disc")
+col.data$tissue <- tissue
+
+# get normalized counts for between sample comparison with DESeq2 
+dds <- DESeqDataSetFromMatrix(countData = assay(se), 
+                              colData = col.data,
+                              design = ~ tissue)
+
+dds <- estimateSizeFactors(dds)
+
+assays(se)$normcounts <- counts(dds, normalized = T)
+assays(se)$logcounts <- log2(assays(se)$normcounts + 1)
 
 #####--- 3. Save SummarizedExperiment object
 save(se, file = file.path(out_dir,paste0(project,"_se.Rda")))
