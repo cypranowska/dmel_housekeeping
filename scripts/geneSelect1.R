@@ -9,6 +9,7 @@ library(SummarizedExperiment)
 library(biomaRt)
 library(GO.db)
 library(ggplot2)
+library(GGally)
 
 option_list <- list(
   make_option("--project", default = "", type = "character", help = "name of project, e.g. hs"),
@@ -41,18 +42,38 @@ df <- data.frame(flybase_id = row.names(data.use),
 # filtering genes for against lower bound thresholds for expression
 # and upper bound variance
 
-df %>% filter(var.expr < 2.2) %>% filter(mean.expr > 7) -> hk
+df %>% filter(var.expr < 2.2) %>% filter(mean.expr > 10) -> hk
 
-hk %>% arrange(desc(mean.expr)) %>% arrange(var.expr) %>% top_n(300, -var.expr) -> hk
+hk %>% arrange(desc(mean.expr)) %>% arrange(var.expr) %>% top_n(600, -var.expr) -> hk
 
+# plot pairwise comparisons of normalized gene expression
+ggpairs(as.data.frame(data.use[which(rownames(data.use) %in% hk$flybase_id),]))
+ggsave(file.path(out_dir,"housekeeping_ggpairs_normplot.svg"))
+
+df2 <- as.data.frame(t(data.use[which(rownames(data.use) %in% hk$flybase_id),]))
+df2$sample <- rownames(df2)
+df2 <- melt(df2)
+
+df2 %>% mutate(tissue = case_when(sample %in% c("SRR070392", "SRR070393", "SRR111884", "SRR111885", "SRR350962", "SRR350963") ~ "im_disc", 
+                                  sample %in% c("SRR070405", "SRR070406") ~ "fat_body", 
+                                  sample %in% c("SRR070407", "SRR070425") ~ "saliv", 
+                                  sample %in% c("SRR070408", "SRR100268") ~ "dig", 
+                                  sample %in% c("SRR070409", "SRR070410") ~ "cns", 
+                                  sample %in% c("SRR070426", "SRR100269") ~ "carcass")) -> df2
+
+df2 %>% group_by(tissue, variable) %>% summarize(mean_size = mean(value)) %>% dcast(fomula = tissue ~ variable, value.var = "mean_size") -> tissue
+tissue %>% column_to_rownames("tissue") %>% t() %>% as.data.frame() -> tissue
+
+ggpairs(tissue)
+ggsave(file.path(out_dir,"housekeeping_ggpairs_tissue_normplot.svg"))
 
 ###----- 3. Save housekeeping gene lists
-write.csv(hk, file = paste0("../filt/housekeeping300_v4.csv"))
+write.csv(hk, file = paste0("../filt/housekeeping_final.csv"))
 
 ###----- 4. Qualitative observations of selected genes
 
 # get gene ontology terms for genes in hk
-#fb <- useMart("ensembl", dataset = "dmelanogaster_gene_ensembl")
+fb <- useMart("ensembl", dataset = "dmelanogaster_gene_ensembl")
 
 hk.go <- getBM(attributes = c('flybase_gene_id', 'external_gene_name','go_id','name_1006','definition_1006'),
                filters = 'flybase_gene_id',
@@ -84,7 +105,7 @@ as.data.frame(hk.go.bp)[1:12,] -> bp.subset
 hk.go %>% filter(ont == "MF") %>% group_by(go_id) %>% tally() %>% arrange(desc(n)) -> hk.go.mf
 as.data.frame(hk.go.mf)[1:13,] -> mf.subset
 hk.go %>% filter(ont == "CC") %>% group_by(go_id) %>% tally() %>% arrange(desc(n)) -> hk.go.cc
-as.data.frame(hk.go.cc)[1:18,] -> cc.subset
+as.data.frame(hk.go.cc)[1:10,] -> cc.subset
 
 # plot bar plot of top GO terms for BP category
 ggplot(bp.subset, aes(x = reorder(go_id, -n), y = n)) + 
@@ -92,7 +113,7 @@ ggplot(bp.subset, aes(x = reorder(go_id, -n), y = n)) +
   labs(x = 'biological process', y = 'number of genes') + 
   coord_flip() + theme_classic()
 
-ggsave(filename = file.path(out_dir,paste0(project,"1kv1_GO-terms_BP_barplot.svg")))
+ggsave(filename = file.path(out_dir,paste0(project,"final_GO-terms_BP_barplot.svg")))
 
 # plot bar plot of top GO terms for MF category
 ggplot(mf.subset, aes(x = reorder(go_id, -n), y = n)) + 
@@ -100,7 +121,7 @@ ggplot(mf.subset, aes(x = reorder(go_id, -n), y = n)) +
   labs(x = 'molecular function', y = 'number of genes') + 
   coord_flip() + theme_classic()
 
-ggsave(filename = file.path(out_dir,paste0(project,"1kv1_GO-terms_MF_barplot.svg")))
+ggsave(filename = file.path(out_dir,paste0(project,"final_GO-terms_MF_barplot.svg")))
 
 # plot bar plot of top GO terms for CC category
 ggplot(cc.subset, aes(x = reorder(go_id, -n), y = n)) + 
@@ -108,7 +129,7 @@ ggplot(cc.subset, aes(x = reorder(go_id, -n), y = n)) +
   labs(x = 'cellular component', y = 'number of genes') + 
   coord_flip() + theme_classic()
 
-ggsave(filename = file.path(out_dir,paste0(project,"1kv1_GO-terms_CC_barplot.svg")))
+ggsave(filename = file.path(out_dir,paste0(project,"final_GO-terms_CC_barplot.svg")))
 
 # # repeat for GOSlim terms
 # hk.goslim %>% filter(ont == "BP") %>% group_by(goslim_goa_accession) %>% tally() %>% arrange(desc(n)) -> hk.goslim.bp
